@@ -18,9 +18,18 @@ interface Author {
   topComic: string;
 }
 
+interface AuthorAccum {
+  name: string;
+  comics: number;
+  totalViews: number;
+  ratings: number[];
+  genres: Set<string>;
+  topComic: string;
+}
+
 const authorsData: Author[] = Array.from(
   MOCK_COMICS.reduce((map, c) => {
-    const existing = map.get(c.author) || { name: c.author, comics: 0, totalViews: 0, ratings: [] as number[], genres: new Set<string>(), topComic: c.title };
+    const existing: AuthorAccum = map.get(c.author) || { name: c.author, comics: 0, totalViews: 0, ratings: [] as number[], genres: new Set<string>(), topComic: c.title };
     existing.comics++;
     existing.totalViews += c.views;
     existing.ratings.push(c.rating);
@@ -28,7 +37,7 @@ const authorsData: Author[] = Array.from(
     if (c.views > (MOCK_COMICS.find(x => x.title === existing.topComic)?.views || 0)) existing.topComic = c.title;
     map.set(c.author, existing);
     return map;
-  }, new Map())
+  }, new Map<string, AuthorAccum>())
 ).map(([_, a]) => ({
   name: a.name,
   avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${a.name}`,
