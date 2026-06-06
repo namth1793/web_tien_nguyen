@@ -44,7 +44,7 @@ export default function AuthModal({ open, onClose, defaultTab = 'login' }: AuthM
     setLoading(true);
     try {
       await register(regForm.username, regForm.email, regForm.password);
-      toast({ title: 'Chào mừng đến MangaVN! 🎉', variant: 'success' });
+      toast({ title: 'Chào mừng đến Nếp Chữ! 🎉', variant: 'success' });
       onClose();
     } catch (err: unknown) {
       toast({ title: 'Đăng ký thất bại', description: err instanceof Error ? err.message : 'Vui lòng thử lại', variant: 'error' });
@@ -72,7 +72,7 @@ export default function AuthModal({ open, onClose, defaultTab = 'login' }: AuthM
               <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
                 <BookOpen className="w-4 h-4 text-white" />
               </div>
-              <span className="font-black text-lg bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">MangaVN</span>
+              <span className="font-black text-lg bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">Nếp Chữ</span>
             </div>
 
             <AnimatePresence mode="wait">
@@ -148,7 +148,7 @@ export default function AuthModal({ open, onClose, defaultTab = 'login' }: AuthM
 
                 <div className="p-3 bg-purple-500/5 border border-purple-500/20 rounded-xl">
                   <p className="text-[11px] text-center text-muted-foreground">
-                    <span className="font-semibold text-purple-400">Demo:</span> fan@manga.vn · <span className="font-mono">password123</span>
+                    <span className="font-semibold text-purple-400">Demo:</span> fan@nepchu.vn · <span className="font-mono">password123</span>
                   </p>
                 </div>
               </motion.form>

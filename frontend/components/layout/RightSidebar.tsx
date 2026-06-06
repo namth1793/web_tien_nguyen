@@ -221,7 +221,7 @@ export default function RightSidebar() {
                       <BookOpen className="w-8 h-8 text-white" />
                     </div>
                   </div>
-                  <h3 className="font-bold text-base mb-1">Tham gia MangaVN</h3>
+                  <h3 className="font-bold text-base mb-1">Tham gia Nếp Chữ</h3>
                   <p className="text-xs text-muted-foreground mb-4 leading-relaxed">Đăng nhập để theo dõi truyện, lưu bookmark và nhiều tính năng hơn</p>
                   <div className="space-y-2">
                     <motion.button

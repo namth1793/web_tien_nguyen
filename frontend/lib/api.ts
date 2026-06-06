@@ -1,7 +1,7 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5030';
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('manga_token') : null;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('nepchu_token') : null;
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers: {

@@ -258,7 +258,7 @@ export default function HomePage() {
         {/* Recommended */}
         <ComicCarousel
           title="Được Đề Xuất"
-          subtitle="Những bộ manga hot nhất đang trending"
+          subtitle="Những bộ tiểu thuyết hot nhất đang trending"
           comics={pool}
           loading={loading && pool.length === 0}
           icon={<Flame className="w-4.5 h-4.5" style={{ width: '1.1rem', height: '1.1rem' }} />}

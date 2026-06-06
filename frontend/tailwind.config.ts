@@ -45,7 +45,7 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        manga: {
+        nepchu: {
           purple: '#7c3aed',
           pink: '#ec4899',
           dark: '#0f0f1a',

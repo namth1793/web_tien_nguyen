@@ -12,15 +12,15 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: { default: 'MangaVN — Đọc Manga Online Miễn Phí', template: '%s | MangaVN' },
-  description: 'Website đọc manga, manhwa, manhua online miễn phí. Cập nhật nhanh nhất, nhiều thể loại nhất tại Việt Nam.',
-  keywords: ['manga', 'manhwa', 'manhua', 'đọc truyện online', 'truyện tranh', 'MangaVN'],
-  authors: [{ name: 'MangaVN' }],
+  title: { default: 'Nếp Chữ — Đọc Tiểu Thuyết Online Miễn Phí', template: '%s | Nếp Chữ' },
+  description: 'Website đọc tiểu thuyết, truyện chữ online miễn phí. Cập nhật nhanh nhất, nhiều thể loại nhất tại Việt Nam.',
+  keywords: ['tiểu thuyết', 'truyện chữ', 'đọc truyện online', 'truyện tiên hiệp', 'truyện kiếm hiệp', 'Nếp Chữ'],
+  authors: [{ name: 'Nếp Chữ' }],
   metadataBase: new URL('http://localhost:3030'),
   openGraph: {
     type: 'website',
     locale: 'vi_VN',
-    siteName: 'MangaVN',
+    siteName: 'Nếp Chữ',
   },
 };
 

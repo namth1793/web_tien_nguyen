@@ -21,14 +21,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   const refreshUser = useCallback(async () => {
-    const stored = localStorage.getItem('manga_token');
+    const stored = localStorage.getItem('nepchu_token');
     if (!stored) { setLoading(false); return; }
     try {
       const u = await api.me();
       setUser(u);
       setToken(stored);
     } catch {
-      localStorage.removeItem('manga_token');
+      localStorage.removeItem('nepchu_token');
       setUser(null);
       setToken(null);
     } finally {
@@ -40,20 +40,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const { token: t, user: u } = await api.login(email, password);
-    localStorage.setItem('manga_token', t);
+    localStorage.setItem('nepchu_token', t);
     setToken(t);
     setUser(u);
   };
 
   const register = async (username: string, email: string, password: string) => {
     const { token: t, user: u } = await api.register(username, email, password);
-    localStorage.setItem('manga_token', t);
+    localStorage.setItem('nepchu_token', t);
     setToken(t);
     setUser(u);
   };
 
   const logout = () => {
-    localStorage.removeItem('manga_token');
+    localStorage.removeItem('nepchu_token');
     setToken(null);
     setUser(null);
   };

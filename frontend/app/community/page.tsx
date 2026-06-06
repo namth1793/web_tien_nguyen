@@ -21,7 +21,7 @@ interface Post {
 }
 
 const POSTS: Post[] = [
-  { id: 1, author: { name: 'MangaFan', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=MangaFan', level: 15 }, comic: { title: MOCK_COMICS[0].title, slug: MOCK_COMICS[0].slug, cover: MOCK_COMICS[0].cover }, content: 'Truyện này quá xuất sắc! Cốt truyện chặt chẽ, nhân vật được xây dựng rất sâu sắc. Chap mới nhất thực sự làm tôi ngạc nhiên hoàn toàn. Ai chưa đọc thì phải đọc ngay đi!', likes: 142, replies: 28, createdAt: new Date(Date.now() - 2 * 3600000).toISOString(), type: 'review' },
+  { id: 1, author: { name: 'TruyenFan', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=TruyenFan', level: 15 }, comic: { title: MOCK_COMICS[0].title, slug: MOCK_COMICS[0].slug, cover: MOCK_COMICS[0].cover }, content: 'Truyện này quá xuất sắc! Cốt truyện chặt chẽ, nhân vật được xây dựng rất sâu sắc. Chap mới nhất thực sự làm tôi ngạc nhiên hoàn toàn. Ai chưa đọc thì phải đọc ngay đi!', likes: 142, replies: 28, createdAt: new Date(Date.now() - 2 * 3600000).toISOString(), type: 'review' },
   { id: 2, author: { name: 'DragonReader', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=DragonReader', level: 8 }, comic: { title: MOCK_COMICS[1].title, slug: MOCK_COMICS[1].slug, cover: MOCK_COMICS[1].cover }, content: 'Ai đang follow truyện này không? Plot twist ở chap 85 làm tôi sốc thật sự. Cực kỳ khuyến khích mọi người đọc thể loại này. Tác giả thật tài năng!', likes: 89, replies: 15, createdAt: new Date(Date.now() - 5 * 3600000).toISOString(), type: 'discussion' },
   { id: 3, author: { name: 'SakuraReader', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SakuraReader', level: 22 }, comic: { title: MOCK_COMICS[9].title, slug: MOCK_COMICS[9].slug, cover: MOCK_COMICS[9].cover }, content: 'Đây là một trong những bộ hay nhất tôi từng đọc. Thế giới quan rộng lớn, hệ thống tu tiên rất độc đáo. Rating 9.4 hoàn toàn xứng đáng. Cảm ơn tác giả đã cho ra đời kiệt tác này!', likes: 234, replies: 47, createdAt: new Date(Date.now() - 1 * 86400000).toISOString(), type: 'review' },
   { id: 4, author: { name: 'NightOwl', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=NightOwl', level: 5 }, comic: { title: MOCK_COMICS[3].title, slug: MOCK_COMICS[3].slug, cover: MOCK_COMICS[3].cover }, content: 'Gợi ý mọi người thể loại magic system cực kỳ hay. Nếu bạn thích fantasy có hệ thống phép thuật rõ ràng và logic thì đây là cái bạn cần tìm!', likes: 67, replies: 12, createdAt: new Date(Date.now() - 2 * 86400000).toISOString(), type: 'recommendation' },
@@ -29,7 +29,7 @@ const POSTS: Post[] = [
 
 const TOP_USERS = [
   { name: 'SakuraReader', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SakuraReader', posts: 234, level: 22 },
-  { name: 'MangaFan', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=MangaFan', posts: 187, level: 15 },
+  { name: 'TruyenFan', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=TruyenFan', posts: 187, level: 15 },
   { name: 'DragonReader', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=DragonReader', posts: 143, level: 8 },
   { name: 'NightOwl', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=NightOwl', posts: 98, level: 5 },
 ];
@@ -59,7 +59,7 @@ export default function CommunityPage() {
         </div>
         <div>
           <h1 className="text-2xl font-bold">Cộng Đồng</h1>
-          <p className="text-sm text-muted-foreground">Chia sẻ cảm nhận, thảo luận về manga yêu thích</p>
+          <p className="text-sm text-muted-foreground">Chia sẻ cảm nhận, thảo luận về tiểu thuyết yêu thích</p>
         </div>
       </div>
 

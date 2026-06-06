@@ -19,7 +19,7 @@ interface Notification {
 const NOTIFICATIONS: Notification[] = [
   { id: 1, type: 'chapter', title: 'Chương mới: Kiếm Lai', body: 'Chương 156: Kiếm Đạo Tột Đỉnh đã được cập nhật!', read: false, createdAt: new Date(Date.now() - 30 * 60000).toISOString() },
   { id: 2, type: 'chapter', title: 'Chương mới: Đấu La Đại Lục', body: 'Chương 300: Thiên Đấu Đài vừa ra mắt!', read: false, createdAt: new Date(Date.now() - 2 * 3600000).toISOString() },
-  { id: 3, type: 'like', title: 'MangaFan đã thích bình luận của bạn', body: '"Truyện này quá hay!" — trong Toàn Chức Pháp Sư', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=MangaFan', read: false, createdAt: new Date(Date.now() - 4 * 3600000).toISOString() },
+  { id: 3, type: 'like', title: 'TruyenFan đã thích bình luận của bạn', body: '"Truyện này quá hay!" — trong Toàn Chức Pháp Sư', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=TruyenFan', read: false, createdAt: new Date(Date.now() - 4 * 3600000).toISOString() },
   { id: 4, type: 'comment', title: 'DragonReader đã trả lời bình luận của bạn', body: 'Đồng ý với bạn, chap đó cực hay!', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=DragonReader', read: true, createdAt: new Date(Date.now() - 1 * 86400000).toISOString() },
   { id: 5, type: 'follow', title: 'SakuraReader đã theo dõi bạn', body: 'Bây giờ bạn có 12 người theo dõi', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SakuraReader', read: true, createdAt: new Date(Date.now() - 2 * 86400000).toISOString() },
   { id: 6, type: 'chapter', title: 'Chương mới: Ma Đạo Tổ Sư', body: 'Chương 200: Ngoại Truyện Kết Thúc — phần cuối đã cập nhật', read: true, createdAt: new Date(Date.now() - 3 * 86400000).toISOString() },

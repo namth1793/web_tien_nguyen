@@ -53,8 +53,8 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
                 transition={{ duration: 0.2 }}
                 className="overflow-hidden"
               >
-                <p className="font-black text-lg leading-none bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">MangaVN</p>
-                <p className="text-[10px] text-muted-foreground font-medium mt-0.5 whitespace-nowrap">Đọc Manga Miễn Phí</p>
+                <p className="font-black text-lg leading-none bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">Nếp Chữ</p>
+                <p className="text-[10px] text-muted-foreground font-medium mt-0.5 whitespace-nowrap">Đọc Tiểu Thuyết Miễn Phí</p>
               </motion.div>
             )}
           </AnimatePresence>
