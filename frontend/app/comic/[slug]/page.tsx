@@ -1,18 +1,33 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Star, Eye, BookOpen, Bookmark, Heart, Share2, ChevronRight, Play, Clock, MessageCircle, Send, ThumbsUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Star, Eye, BookOpen, Bookmark, Heart, Share2,
+  ChevronRight, Play, Clock, MessageCircle, Send, ThumbsUp,
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import StarRating from '@/components/comics/StarRating';
 import { api } from '@/lib/api';
 import { MOCK_COMICS, MOCK_CHAPTERS } from '@/lib/data';
 import { formatViews, formatDate, genreColor, statusLabel, cn } from '@/lib/utils';
-import type { ComicDetail } from '@/lib/types';
+import type { ComicDetail, Comic } from '@/lib/types';
+
+/* ─── helpers ─── */
+function getFavs(): Comic[] {
+  try { return JSON.parse(localStorage.getItem('nepchu_favorites') || '[]'); } catch { return []; }
+}
+function setFavs(favs: Comic[]) {
+  localStorage.setItem('nepchu_favorites', JSON.stringify(favs));
+}
+function getRatings(): Record<string, number> {
+  try { return JSON.parse(localStorage.getItem('nepchu_ratings') || '{}'); } catch { return {}; }
+}
 
 export default function ComicDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -20,6 +35,10 @@ export default function ComicDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showAllChapters, setShowAllChapters] = useState(false);
   const [comment, setComment] = useState('');
+  const [isFav, setIsFav] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+  const [shareToast, setShareToast] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -32,7 +51,36 @@ export default function ComicDetailPage() {
       } finally { setLoading(false); }
     }
     load();
+    // Load localStorage state
+    const favs = getFavs();
+    setIsFav(favs.some(f => f.slug === slug));
+    const ratings = getRatings();
+    if (ratings[slug]) setUserRating(ratings[slug]);
   }, [slug]);
+
+  const toggleFav = () => {
+    if (!comic) return;
+    const favs = getFavs();
+    const exists = favs.some(f => f.slug === slug);
+    const next = exists ? favs.filter(f => f.slug !== slug) : [...favs, comic as Comic];
+    setFavs(next);
+    setIsFav(!exists);
+  };
+
+  const submitRating = (stars: number) => {
+    setUserRating(stars);
+    const ratings = getRatings();
+    ratings[slug] = stars;
+    localStorage.setItem('nepchu_ratings', JSON.stringify(ratings));
+    setRatingSubmitted(true);
+    setTimeout(() => setRatingSubmitted(false), 2000);
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href).catch(() => {});
+    setShareToast(true);
+    setTimeout(() => setShareToast(false), 2000);
+  };
 
   if (loading) {
     return (
@@ -54,7 +102,7 @@ export default function ComicDetailPage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero */}
+      {/* Hero banner */}
       <div className="relative h-64 overflow-hidden">
         <Image src={comic.cover} alt={comic.title} fill className="object-cover blur-md opacity-20 scale-110" unoptimized />
         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
@@ -114,10 +162,56 @@ export default function ComicDetailPage() {
                   </Button>
                 </Link>
               )}
-              <Button variant="outline" size="icon"><Bookmark className="w-4 h-4" /></Button>
-              <Button variant="outline" size="icon"><Heart className="w-4 h-4" /></Button>
-              <Button variant="outline" size="icon"><Share2 className="w-4 h-4" /></Button>
+
+              {/* Bookmark */}
+              <motion.div whileTap={{ scale: 0.88 }}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={toggleFav}
+                  className={cn(
+                    'transition-all duration-200',
+                    isFav && 'border-purple-500/60 bg-purple-500/10 text-purple-500',
+                  )}
+                  title={isFav ? 'Bỏ lưu' : 'Lưu truyện'}
+                >
+                  <Bookmark className={cn('w-4 h-4 transition-all', isFav && 'fill-current')} />
+                </Button>
+              </motion.div>
+
+              {/* Share */}
+              <div className="relative">
+                <Button variant="outline" size="icon" onClick={handleShare} title="Sao chép link">
+                  <Share2 className="w-4 h-4" />
+                </Button>
+                <AnimatePresence>
+                  {shareToast && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6, scale: 0.9 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.9 }}
+                      className="absolute -top-9 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[11px] font-medium px-2.5 py-1.5 rounded-lg whitespace-nowrap shadow-lg pointer-events-none"
+                    >
+                      ✓ Đã sao chép link
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
+
+            {/* Fav toast */}
+            <AnimatePresence>
+              {isFav && (
+                <motion.p
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mt-2 text-xs text-purple-400 flex items-center gap-1"
+                >
+                  <Bookmark className="w-3 h-3 fill-current" /> Đã lưu vào Yêu thích
+                </motion.p>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -125,6 +219,63 @@ export default function ComicDetailPage() {
         <div className="bg-card border border-border rounded-2xl p-5 mb-6">
           <h2 className="font-bold mb-2">Giới thiệu</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{comic.description}</p>
+        </div>
+
+        {/* ─── ĐÁNH GIÁ SAO ─── */}
+        <div className="bg-card border border-border rounded-2xl p-5 mb-6">
+          <h2 className="font-bold mb-1 flex items-center gap-2">
+            <Star className="w-4 h-4 text-yellow-500 fill-current" />
+            Đánh giá của bạn
+          </h2>
+          <p className="text-xs text-muted-foreground mb-4">
+            Điểm cộng đồng: <span className="font-semibold text-foreground">{comic.rating}/10</span>
+            {' · '}Chọn số sao để đánh giá truyện này
+          </p>
+
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <StarRating value={userRating} onChange={submitRating} size="lg" showLabel />
+
+            <AnimatePresence>
+              {ratingSubmitted && (
+                <motion.span
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="text-sm text-emerald-500 font-semibold flex items-center gap-1"
+                >
+                  ✓ Đã ghi nhận đánh giá!
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {userRating > 0 && !ratingSubmitted && (
+            <p className="text-xs text-muted-foreground mt-2">
+              Bạn đã đánh giá <span className="font-semibold text-yellow-500">{userRating * 2}/10</span>. Nhấn sao khác để thay đổi.
+            </p>
+          )}
+
+          {/* Rating distribution (decorative) */}
+          <div className="mt-5 space-y-1.5">
+            {[5, 4, 3, 2, 1].map(star => {
+              const pct = [62, 22, 9, 5, 2][5 - star];
+              return (
+                <div key={star} className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="w-3 text-right">{star}</span>
+                  <Star className="w-3 h-3 text-yellow-400 fill-current flex-none" />
+                  <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${pct}%` }}
+                      transition={{ duration: 0.8, delay: (5 - star) * 0.07, ease: 'easeOut' }}
+                      className="h-full bg-gradient-to-r from-yellow-500 to-amber-400 rounded-full"
+                    />
+                  </div>
+                  <span className="w-8 text-right">{pct}%</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Chapters */}
@@ -163,7 +314,6 @@ export default function ComicDetailPage() {
             Bình luận ({comic.comments.length})
           </h2>
 
-          {/* Comment input */}
           <div className="flex gap-3 mb-4">
             <Avatar className="w-8 h-8 flex-none">
               <AvatarFallback>B</AvatarFallback>
