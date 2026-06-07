@@ -6,8 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Home, Library, Users, MessageSquare, Inbox,
   LogIn, LogOut, Menu, X, ChevronLeft, ChevronRight,
-  Sparkles, Settings, Bell
+  Sparkles, Sun, Moon,
 } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthModal from '@/components/auth/AuthModal';
@@ -31,6 +32,7 @@ interface SidebarContentProps {
 function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true }: SidebarContentProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { resolvedTheme, setTheme } = useTheme();
   const [showAuth, setShowAuth] = useState(false);
 
   return (
@@ -59,14 +61,6 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
             )}
           </AnimatePresence>
         </Link>
-        {showCollapse && (
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
-        )}
       </div>
 
       {/* Promo banner */}
@@ -203,6 +197,54 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
             <AnimatePresence>
               {!collapsed && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>Đăng nhập</motion.span>}
             </AnimatePresence>
+          </motion.button>
+        )}
+      </div>
+
+      {/* Bottom toolbar: theme + collapse */}
+      <div className={cn(
+        'px-2 pb-3 flex items-center gap-1',
+        collapsed ? 'flex-col' : 'flex-row'
+      )}>
+        {/* Theme toggle */}
+        <motion.button
+          whileTap={{ scale: 0.92 }}
+          onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+          className={cn(
+            'flex items-center gap-2.5 px-3 py-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-all text-sm',
+            collapsed ? 'w-10 h-10 justify-center px-0' : 'flex-1'
+          )}
+          title={resolvedTheme === 'dark' ? 'Chuyển sang sáng' : 'Chuyển sang tối'}
+        >
+          <AnimatePresence mode="wait">
+            {resolvedTheme === 'dark' ? (
+              <motion.div key="sun" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                <Sun className="w-4 h-4 flex-none text-yellow-400" />
+              </motion.div>
+            ) : (
+              <motion.div key="moon" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                <Moon className="w-4 h-4 flex-none text-indigo-400" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="whitespace-nowrap">
+                {resolvedTheme === 'dark' ? 'Giao diện sáng' : 'Giao diện tối'}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
+
+        {/* Collapse toggle (desktop only) */}
+        {showCollapse && (
+          <motion.button
+            whileTap={{ scale: 0.92 }}
+            onClick={() => setCollapsed(!collapsed)}
+            className="hidden lg:flex items-center justify-center w-10 h-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/70 transition-all flex-none"
+            title={collapsed ? 'Mở rộng sidebar' : 'Thu gọn sidebar'}
+          >
+            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
           </motion.button>
         )}
       </div>
