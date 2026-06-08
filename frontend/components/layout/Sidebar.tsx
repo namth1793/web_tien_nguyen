@@ -1,26 +1,28 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Home, Library, Users, MessageSquare, Inbox,
   LogIn, LogOut, Menu, X, ChevronLeft, ChevronRight,
-  Sparkles, Sun, Moon,
+  Sparkles, Sun, Moon, Shield,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthModal from '@/components/auth/AuthModal';
+import { getSidebarConfig } from '@/lib/sidebar-config';
 import { cn } from '@/lib/utils';
 
-const navItems = [
-  { href: '/', icon: Home, label: 'Trang Chủ', color: 'from-blue-500 to-cyan-500' },
-  { href: '/library', icon: Library, label: 'Thư Viện', color: 'from-purple-500 to-violet-500' },
-  { href: '/authors', icon: Users, label: 'Tác Giả', color: 'from-pink-500 to-rose-500' },
-  { href: '/community', icon: MessageSquare, label: 'Cộng Đồng', color: 'from-green-500 to-emerald-500' },
-  { href: '/inbox', icon: Inbox, label: 'Thông Báo', color: 'from-orange-500 to-amber-500', badge: 3 },
-];
+/* ─── Static nav item definitions ─── */
+const NAV_DEFS = [
+  { href: '/',          icon: Home,         color: 'from-blue-500 to-cyan-500',      badge: 0 },
+  { href: '/library',   icon: Library,      color: 'from-purple-500 to-violet-500',  badge: 0 },
+  { href: '/authors',   icon: Users,        color: 'from-pink-500 to-rose-500',      badge: 0 },
+  { href: '/community', icon: MessageSquare,color: 'from-green-500 to-emerald-500',  badge: 0 },
+  { href: '/inbox',     icon: Inbox,        color: 'from-orange-500 to-amber-500',   badge: 3 },
+] as const;
 
 interface SidebarContentProps {
   collapsed: boolean;
@@ -34,11 +36,28 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
   const { user, logout } = useAuth();
   const { resolvedTheme, setTheme } = useTheme();
   const [showAuth, setShowAuth] = useState(false);
+  const [navConfig, setNavConfig] = useState(getSidebarConfig);
+
+  /* Re-read config when admin saves changes */
+  useEffect(() => {
+    const refresh = () => setNavConfig(getSidebarConfig());
+    window.addEventListener('nepchu-sidebar-update', refresh);
+    return () => window.removeEventListener('nepchu-sidebar-update', refresh);
+  }, []);
+
+  /* Build visible + ordered nav items */
+  const navItems = navConfig
+    .filter(c => c.visible)
+    .map(c => {
+      const def = NAV_DEFS.find(d => d.href === c.key);
+      return def ? { href: c.key, icon: def.icon, label: c.label, color: def.color, badge: def.badge } : null;
+    })
+    .filter(Boolean) as typeof NAV_DEFS[number] & { label: string }[];
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Logo */}
-      <div className="flex items-center justify-between p-4 pb-3">
+      <div className="flex items-center p-4 pb-3">
         <Link href="/" onClick={onClose} className="flex items-center gap-3 min-w-0">
           <div className="relative flex-none">
             <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/30">
@@ -98,7 +117,6 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
                   ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-600/20'
                   : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
               )}>
-                {/* Icon with gradient when active */}
                 <div className={cn(
                   'flex-none flex items-center justify-center w-8 h-8 rounded-lg transition-all',
                   active
@@ -121,7 +139,7 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
                   )}
                 </AnimatePresence>
 
-                {badge && !collapsed && (
+                {badge > 0 && !collapsed && (
                   <span className={cn(
                     'text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center',
                     active ? 'bg-white/20 text-white' : 'bg-red-500 text-white'
@@ -130,7 +148,6 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
                   </span>
                 )}
 
-                {/* Active indicator line */}
                 {active && (
                   <motion.div
                     layoutId="activeIndicator"
@@ -141,13 +158,48 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
             </Link>
           );
         })}
+
+        {/* Admin link */}
+        {!collapsed && (
+          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest px-3 pt-4 pb-2">Hệ thống</p>
+        )}
+        <Link href="/admin" onClick={onClose}>
+          <div className={cn(
+            'relative group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer',
+            pathname === '/admin'
+              ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg shadow-red-600/20'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+          )}>
+            <div className={cn(
+              'flex-none flex items-center justify-center w-8 h-8 rounded-lg transition-all',
+              pathname === '/admin'
+                ? 'bg-white/15'
+                : 'group-hover:bg-gradient-to-br group-hover:from-red-600 group-hover:to-orange-600 group-hover:text-white group-hover:shadow-md'
+            )}>
+              <Shield className="w-4 h-4" />
+            </div>
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-sm font-medium flex-1 truncate">
+                  Admin
+                </motion.span>
+              )}
+            </AnimatePresence>
+            {pathname === '/admin' && (
+              <motion.div
+                layoutId="activeIndicator"
+                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full"
+              />
+            )}
+          </div>
+        </Link>
       </nav>
 
       {/* Bottom divider */}
       <div className="mx-3 my-2 h-px bg-border/60" />
 
       {/* User section */}
-      <div className="px-2 pb-4 space-y-1">
+      <div className="px-2 pb-1 space-y-1">
         {user ? (
           <>
             <div className={cn(
@@ -202,11 +254,7 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
       </div>
 
       {/* Bottom toolbar: theme + collapse */}
-      <div className={cn(
-        'px-2 pb-3 flex items-center gap-1',
-        collapsed ? 'flex-col' : 'flex-row'
-      )}>
-        {/* Theme toggle */}
+      <div className={cn('px-2 pb-3 flex items-center gap-1', collapsed ? 'flex-col' : 'flex-row')}>
         <motion.button
           whileTap={{ scale: 0.92 }}
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
@@ -236,7 +284,6 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
           </AnimatePresence>
         </motion.button>
 
-        {/* Collapse toggle (desktop only) */}
         {showCollapse && (
           <motion.button
             whileTap={{ scale: 0.92 }}
@@ -260,7 +307,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile hamburger */}
       <motion.button
         whileTap={{ scale: 0.95 }}
         onClick={() => setMobileOpen(true)}
@@ -269,7 +315,6 @@ export default function Sidebar() {
         <Menu className="w-5 h-5" />
       </motion.button>
 
-      {/* Desktop sidebar */}
       <motion.aside
         animate={{ width: collapsed ? 68 : 256 }}
         transition={{ duration: 0.25, ease: [0.23, 1, 0.32, 1] }}
@@ -278,21 +323,16 @@ export default function Sidebar() {
         <SidebarContent collapsed={collapsed} setCollapsed={setCollapsed} showCollapse />
       </motion.aside>
 
-      {/* Mobile drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
               className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
             />
             <motion.aside
-              initial={{ x: -300, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -300, opacity: 0 }}
+              initial={{ x: -300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -300, opacity: 0 }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
               className="lg:hidden fixed left-0 top-0 h-full w-72 bg-card border-r border-border z-50 flex flex-col shadow-2xl shadow-black/40"
             >
