@@ -7,6 +7,8 @@ export interface User {
   bio: string;
   level: number;
   xp: number;
+  role: 'admin' | 'author' | 'user';
+  status: 'active' | 'banned';
   createdAt: string;
 }
 

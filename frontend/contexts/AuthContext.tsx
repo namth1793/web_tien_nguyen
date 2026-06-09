@@ -7,8 +7,8 @@ interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  register: (username: string, email: string, password: string) => Promise<User>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -43,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('nepchu_token', t);
     setToken(t);
     setUser(u);
+    return u;
   };
 
   const register = async (username: string, email: string, password: string) => {
@@ -50,6 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('nepchu_token', t);
     setToken(t);
     setUser(u);
+    return u;
   };
 
   const logout = () => {

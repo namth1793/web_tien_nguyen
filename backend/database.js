@@ -19,6 +19,8 @@ db.exec(`
     bio TEXT,
     level INTEGER DEFAULT 1,
     xp INTEGER DEFAULT 0,
+    role TEXT NOT NULL DEFAULT 'user',
+    status TEXT NOT NULL DEFAULT 'active',
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -96,18 +98,24 @@ db.exec(`
   );
 `);
 
+// Migration: add role/status columns to existing databases
+try { db.prepare("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'").run(); } catch {}
+try { db.prepare("ALTER TABLE users ADD COLUMN status TEXT NOT NULL DEFAULT 'active'").run(); } catch {}
+// Ensure seeded admin has correct role
+db.prepare("UPDATE users SET role='admin' WHERE username='admin'").run();
+
 function seed() {
   const { count } = db.prepare('SELECT COUNT(*) as count FROM users').get();
   if (count > 0) return;
 
   const hash = bcrypt.hashSync('password123', 10);
   const insUser = db.prepare(`
-    INSERT INTO users (username, email, password, avatar, coin, bio, level, xp)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO users (username, email, password, avatar, coin, bio, level, xp, role)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
-  insUser.run('MangaFan', 'fan@manga.vn', hash, 'https://api.dicebear.com/7.x/avataaars/svg?seed=MangaFan', 500, 'Yêu thích manga Nhật Bản và manhwa Hàn Quốc', 15, 4500);
-  insUser.run('DragonReader', 'dragon@manga.vn', hash, 'https://api.dicebear.com/7.x/avataaars/svg?seed=DragonReader', 250, 'Chuyên đọc truyện hành động và fantasy', 8, 2100);
-  insUser.run('admin', 'admin@manga.vn', hash, 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin', 9999, 'Quản trị viên hệ thống', 99, 99999);
+  insUser.run('MangaFan', 'fan@manga.vn', hash, 'https://api.dicebear.com/7.x/avataaars/svg?seed=MangaFan', 500, 'Yêu thích manga Nhật Bản và manhwa Hàn Quốc', 15, 4500, 'user');
+  insUser.run('DragonReader', 'dragon@manga.vn', hash, 'https://api.dicebear.com/7.x/avataaars/svg?seed=DragonReader', 250, 'Chuyên đọc truyện hành động và fantasy', 8, 2100, 'user');
+  insUser.run('admin', 'admin@manga.vn', hash, 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin', 9999, 'Quản trị viên hệ thống', 99, 99999, 'admin');
 
   const comicsData = [
     { title: 'Đấu La Đại Lục', slug: 'dau-la-dai-luc', cover: 'https://picsum.photos/seed/manga1/300/420', description: 'Tang San rời khỏi thế giới bí ẩn của mình với kiến thức về võ thuật tối thượng. Trong thế giới mới, anh gia nhập học viện Sử Hồn và bắt đầu hành trình trở thành Thần.', author: 'Đường Gia Tam Thiếu', genres: '["Action","Fantasy","Adventure"]', rating: 9.2, views: 1250000, status: 'ongoing', isHot: 1, isNew: 0 },

@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Home, Library, Users, MessageSquare, Inbox,
   LogIn, LogOut, Menu, X, ChevronLeft, ChevronRight,
-  Sparkles, Sun, Moon, Shield,
+  Sparkles, Sun, Moon, Shield, LayoutDashboard,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -159,40 +159,73 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
           );
         })}
 
-        {/* Admin link */}
-        {!collapsed && (
-          <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest px-3 pt-4 pb-2">Hệ thống</p>
-        )}
-        <Link href="/admin" onClick={onClose}>
-          <div className={cn(
-            'relative group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer',
-            pathname === '/admin'
-              ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg shadow-red-600/20'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
-          )}>
-            <div className={cn(
-              'flex-none flex items-center justify-center w-8 h-8 rounded-lg transition-all',
-              pathname === '/admin'
-                ? 'bg-white/15'
-                : 'group-hover:bg-gradient-to-br group-hover:from-red-600 group-hover:to-orange-600 group-hover:text-white group-hover:shadow-md'
-            )}>
-              <Shield className="w-4 h-4" />
-            </div>
-            <AnimatePresence>
-              {!collapsed && (
-                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-sm font-medium flex-1 truncate">
-                  Admin
-                </motion.span>
-              )}
-            </AnimatePresence>
-            {pathname === '/admin' && (
-              <motion.div
-                layoutId="activeIndicator"
-                className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full"
-              />
+        {/* Management link — role-based */}
+        {user && (
+          <>
+            {!collapsed && (
+              <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest px-3 pt-4 pb-2">
+                {user.role === 'admin' ? 'Hệ thống' : 'Quản lí'}
+              </p>
             )}
-          </div>
-        </Link>
+            {user.role === 'admin' ? (
+              <Link href="/dashboard/admin" onClick={onClose}>
+                <div className={cn(
+                  'relative group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer',
+                  pathname.startsWith('/dashboard/admin')
+                    ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg shadow-red-600/20'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+                )}>
+                  <div className={cn(
+                    'flex-none flex items-center justify-center w-8 h-8 rounded-lg transition-all',
+                    pathname.startsWith('/dashboard/admin')
+                      ? 'bg-white/15'
+                      : 'group-hover:bg-gradient-to-br group-hover:from-red-600 group-hover:to-orange-600 group-hover:text-white group-hover:shadow-md'
+                  )}>
+                    <Shield className="w-4 h-4" />
+                  </div>
+                  <AnimatePresence>
+                    {!collapsed && (
+                      <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-sm font-medium flex-1 truncate">
+                        Admin Dashboard
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  {pathname.startsWith('/dashboard/admin') && (
+                    <motion.div layoutId="activeIndicator" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full" />
+                  )}
+                </div>
+              </Link>
+            ) : (
+              <Link href="/dashboard" onClick={onClose}>
+                <div className={cn(
+                  'relative group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer',
+                  pathname === '/dashboard'
+                    ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-violet-600/20'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+                )}>
+                  <div className={cn(
+                    'flex-none flex items-center justify-center w-8 h-8 rounded-lg transition-all',
+                    pathname === '/dashboard'
+                      ? 'bg-white/15'
+                      : 'group-hover:bg-gradient-to-br group-hover:from-violet-600 group-hover:to-purple-600 group-hover:text-white group-hover:shadow-md'
+                  )}>
+                    <LayoutDashboard className="w-4 h-4" />
+                  </div>
+                  <AnimatePresence>
+                    {!collapsed && (
+                      <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-sm font-medium flex-1 truncate">
+                        Quản lí của tôi
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  {pathname === '/dashboard' && (
+                    <motion.div layoutId="activeIndicator" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full" />
+                  )}
+                </div>
+              </Link>
+            )}
+          </>
+        )}
       </nav>
 
       {/* Bottom divider */}

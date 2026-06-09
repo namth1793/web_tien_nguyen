@@ -15,7 +15,7 @@ router.post('/register', (req, res) => {
     const hash = bcrypt.hashSync(password, 10);
     const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`;
     const result = db.prepare(`INSERT INTO users (username, email, password, avatar) VALUES (?, ?, ?, ?)`).run(username, email, hash, avatar);
-    const user = db.prepare('SELECT id, username, email, avatar, coin, bio, level, xp, createdAt FROM users WHERE id = ?').get(result.lastInsertRowid);
+    const user = db.prepare('SELECT id, username, email, avatar, coin, bio, level, xp, role, status, createdAt FROM users WHERE id = ?').get(result.lastInsertRowid);
     res.json({ token: sign(user), user });
   } catch (e) {
     if (e.message.includes('UNIQUE')) return res.status(409).json({ error: 'Username or email already exists' });
@@ -34,7 +34,7 @@ router.post('/login', (req, res) => {
 });
 
 router.get('/me', auth, (req, res) => {
-  const user = db.prepare('SELECT id, username, email, avatar, coin, bio, level, xp, createdAt FROM users WHERE id = ?').get(req.user.id);
+  const user = db.prepare('SELECT id, username, email, avatar, coin, bio, level, xp, role, status, createdAt FROM users WHERE id = ?').get(req.user.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
   res.json(user);
 });
@@ -42,7 +42,7 @@ router.get('/me', auth, (req, res) => {
 router.put('/profile', auth, (req, res) => {
   const { bio, avatar } = req.body;
   db.prepare('UPDATE users SET bio = ?, avatar = ? WHERE id = ?').run(bio, avatar, req.user.id);
-  const user = db.prepare('SELECT id, username, email, avatar, coin, bio, level, xp, createdAt FROM users WHERE id = ?').get(req.user.id);
+  const user = db.prepare('SELECT id, username, email, avatar, coin, bio, level, xp, role, status, createdAt FROM users WHERE id = ?').get(req.user.id);
   res.json(user);
 });
 

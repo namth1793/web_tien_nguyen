@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, User, BookOpen, Loader2, Sparkles, ArrowLeft, Shield } from 'lucide-react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
@@ -17,6 +18,7 @@ interface AuthModalProps {
 }
 
 export default function AuthModal({ open, onClose, defaultTab = 'login' }: AuthModalProps) {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>(defaultTab);
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,9 +32,10 @@ export default function AuthModal({ open, onClose, defaultTab = 'login' }: AuthM
     e.preventDefault();
     setLoading(true);
     try {
-      await login(loginForm.email, loginForm.password);
+      const u = await login(loginForm.email, loginForm.password);
       toast({ title: 'Đăng nhập thành công!', variant: 'success' });
       onClose();
+      if (u.role === 'admin') router.push('/dashboard/admin');
     } catch (err: unknown) {
       toast({ title: 'Đăng nhập thất bại', description: err instanceof Error ? err.message : 'Vui lòng thử lại', variant: 'error' });
     } finally { setLoading(false); }
