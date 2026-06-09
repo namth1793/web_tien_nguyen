@@ -30,7 +30,7 @@ interface AuthorProfile {
 }
 
 interface MyWork {
-  id: number;
+  id: string;
   title: string;
   cover: string;
   genre: string;
@@ -41,10 +41,53 @@ interface MyWork {
   updatedAt: string;
 }
 
-const MOCK_MY_WORKS: MyWork[] = [
-  { id: 1, title: 'Kiếm Vương Truyện', cover: 'https://picsum.photos/seed/mywork1/200/280', genre: 'Kiếm Hiệp', chapters: 42, views: 18500, rating: 8.7, status: 'ongoing', updatedAt: '2024-06-03' },
-  { id: 2, title: 'Dị Giới Lưu Lạc', cover: 'https://picsum.photos/seed/mywork2/200/280', genre: 'Dị Giới', chapters: 15, views: 4200, rating: 7.9, status: 'draft', updatedAt: '2024-05-28' },
-];
+/* ─── Shared localStorage key with /dashboard ─── */
+const STORIES_KEY = 'nepchu_my_stories';
+
+function loadWorks(): MyWork[] {
+  try {
+    const raw = localStorage.getItem(STORIES_KEY);
+    if (!raw) return [];
+    const stories = JSON.parse(raw) as Array<{
+      id: string; title: string; cover: string; genres: string[];
+      status: string; views: number; rating: number;
+      chapters: unknown[]; updatedAt: string; createdAt: string;
+    }>;
+    return stories.map(s => ({
+      id: s.id,
+      title: s.title,
+      cover: s.cover || `https://picsum.photos/seed/${s.id}/200/280`,
+      genre: s.genres?.[0] || '—',
+      chapters: Array.isArray(s.chapters) ? s.chapters.length : 0,
+      views: s.views || 0,
+      rating: s.rating || 0,
+      status: (['ongoing','completed','draft'].includes(s.status) ? s.status : 'draft') as MyWork['status'],
+      updatedAt: s.updatedAt || s.createdAt || '',
+    }));
+  } catch { return []; }
+}
+
+function persistAddWork(w: MyWork): void {
+  try {
+    const stories = JSON.parse(localStorage.getItem(STORIES_KEY) || '[]') as object[];
+    const now = w.updatedAt || new Date().toISOString().split('T')[0];
+    stories.unshift({
+      id: w.id, title: w.title, slug: w.title.toLowerCase().replace(/[^a-z0-9]+/g,'-'),
+      cover: w.cover, description: '', genres: [w.genre],
+      status: w.status, views: 0, rating: 0, chapters: [],
+      createdAt: now, updatedAt: now,
+    });
+    localStorage.setItem(STORIES_KEY, JSON.stringify(stories));
+  } catch { /* ignore */ }
+}
+
+function persistRemoveWork(id: string): void {
+  try {
+    const stories = (JSON.parse(localStorage.getItem(STORIES_KEY) || '[]') as Array<{ id: string }>)
+      .filter(s => s.id !== id);
+    localStorage.setItem(STORIES_KEY, JSON.stringify(stories));
+  } catch { /* ignore */ }
+}
 
 const STATUS_STYLE: Record<string, { label: string; cls: string }> = {
   ongoing:   { label: 'Đang viết',   cls: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' },
@@ -232,10 +275,12 @@ function AuthorDashboard({ profile, user }: {
   profile: AuthorProfile;
   user: { username: string; avatar: string; level: number; coin: number };
 }) {
-  const [works, setWorks] = useState<MyWork[]>(MOCK_MY_WORKS);
+  const [works, setWorks] = useState<MyWork[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newGenre, setNewGenre] = useState(ALL_GENRES[0]);
+
+  useEffect(() => { setWorks(loadWorks()); }, []);
 
   const totalViews = works.reduce((s, w) => s + w.views, 0);
   const totalChapters = works.reduce((s, w) => s + w.chapters, 0);
@@ -245,23 +290,29 @@ function AuthorDashboard({ profile, user }: {
 
   const addWork = () => {
     if (!newTitle.trim()) return;
+    const now = new Date().toISOString().split('T')[0];
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2);
     const w: MyWork = {
-      id: Date.now(),
+      id,
       title: newTitle.trim(),
-      cover: `https://picsum.photos/seed/${Date.now()}/200/280`,
+      cover: `https://picsum.photos/seed/${id}/200/280`,
       genre: newGenre,
       chapters: 0,
       views: 0,
       rating: 0,
       status: 'draft',
-      updatedAt: new Date().toISOString().split('T')[0],
+      updatedAt: now,
     };
+    persistAddWork(w);
     setWorks(prev => [w, ...prev]);
     setNewTitle('');
     setShowAdd(false);
   };
 
-  const removeWork = (id: number) => setWorks(prev => prev.filter(w => w.id !== id));
+  const removeWork = (id: string) => {
+    persistRemoveWork(id);
+    setWorks(prev => prev.filter(w => w.id !== id));
+  };
 
   return (
     <div className="p-4 lg:p-8 max-w-5xl mx-auto">
