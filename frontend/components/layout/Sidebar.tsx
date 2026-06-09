@@ -48,11 +48,11 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
   /* Build visible + ordered nav items */
   const navItems = navConfig
     .filter(c => c.visible)
-    .map(c => {
+    .flatMap(c => {
       const def = NAV_DEFS.find(d => d.href === c.key);
-      return def ? { href: c.key, icon: def.icon, label: c.label, color: def.color, badge: def.badge } : null;
-    })
-    .filter(Boolean) as typeof NAV_DEFS[number] & { label: string }[];
+      if (!def) return [];
+      return [{ href: c.key as string, icon: def.icon, label: c.label, color: def.color as string, badge: def.badge as number }];
+    });
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
