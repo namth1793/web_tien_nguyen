@@ -6,13 +6,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, Home, Library, Users, MessageSquare, Inbox,
   LogIn, LogOut, Menu, X, ChevronLeft, ChevronRight,
-  Sparkles, Sun, Moon, Shield, LayoutDashboard,
+  Sparkles, Sun, Moon, Shield, LayoutDashboard, Heart,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import AuthModal from '@/components/auth/AuthModal';
 import { getSidebarConfig } from '@/lib/sidebar-config';
+import { getFavs } from '@/components/comics/ComicCard';
 import { cn } from '@/lib/utils';
 
 /* ─── Static nav item definitions ─── */
@@ -37,12 +38,21 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
   const { resolvedTheme, setTheme } = useTheme();
   const [showAuth, setShowAuth] = useState(false);
   const [navConfig, setNavConfig] = useState(getSidebarConfig);
+  const [favCount, setFavCount] = useState(0);
 
   /* Re-read config when admin saves changes */
   useEffect(() => {
     const refresh = () => setNavConfig(getSidebarConfig());
     window.addEventListener('nepchu-sidebar-update', refresh);
     return () => window.removeEventListener('nepchu-sidebar-update', refresh);
+  }, []);
+
+  /* Track favorites count */
+  useEffect(() => {
+    setFavCount(getFavs().length);
+    const onUpdate = () => setFavCount(getFavs().length);
+    window.addEventListener('nepchu-favorites-update', onUpdate);
+    return () => window.removeEventListener('nepchu-favorites-update', onUpdate);
   }, []);
 
   /* Build visible + ordered nav items */
@@ -158,6 +168,43 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
             </Link>
           );
         })}
+
+        {/* Yêu thích */}
+        <Link href="/favorites" onClick={onClose}>
+          <div className={cn(
+            'relative group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer',
+            pathname === '/favorites'
+              ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-lg shadow-rose-500/20'
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/70'
+          )}>
+            <div className={cn(
+              'flex-none flex items-center justify-center w-8 h-8 rounded-lg transition-all',
+              pathname === '/favorites'
+                ? 'bg-white/15'
+                : 'group-hover:bg-gradient-to-br group-hover:from-rose-500 group-hover:to-pink-600 group-hover:text-white group-hover:shadow-md'
+            )}>
+              <Heart className={cn('w-4 h-4', pathname === '/favorites' ? 'fill-white' : '')} />
+            </div>
+            <AnimatePresence>
+              {!collapsed && (
+                <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-sm font-medium flex-1 truncate">
+                  Yêu thích
+                </motion.span>
+              )}
+            </AnimatePresence>
+            {favCount > 0 && !collapsed && (
+              <span className={cn(
+                'text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center',
+                pathname === '/favorites' ? 'bg-white/20 text-white' : 'bg-rose-500 text-white'
+              )}>
+                {favCount}
+              </span>
+            )}
+            {pathname === '/favorites' && (
+              <motion.div layoutId="activeIndicator" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full" />
+            )}
+          </div>
+        </Link>
 
         {/* Management link — role-based */}
         {user && (

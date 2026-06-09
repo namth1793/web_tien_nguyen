@@ -1,10 +1,26 @@
 'use client';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Eye, BookOpen, Bookmark, Heart, Flame, Sparkles, Play } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatViews, genreColor, cn } from '@/lib/utils';
 import type { Comic } from '@/lib/types';
+
+/* ─── Favorites helpers ─── */
+export function getFavs(): Comic[] {
+  try { return JSON.parse(localStorage.getItem('nepchu_favorites') || '[]'); } catch { return []; }
+}
+export function setFavs(favs: Comic[]) {
+  localStorage.setItem('nepchu_favorites', JSON.stringify(favs));
+  window.dispatchEvent(new CustomEvent('nepchu-favorites-update'));
+}
+export function toggleFavorite(comic: Comic): boolean {
+  const favs = getFavs();
+  const exists = favs.some(f => f.slug === comic.slug);
+  setFavs(exists ? favs.filter(f => f.slug !== comic.slug) : [...favs, comic]);
+  return !exists;
+}
 
 interface ComicCardProps {
   comic: Comic;
@@ -21,6 +37,23 @@ const rankColors = [
 
 export default function ComicCard({ comic, size = 'md', className, rank }: ComicCardProps) {
   const widths = { sm: 'w-32', md: 'w-44', lg: 'w-52' };
+  const [isFav, setIsFav] = useState(false);
+  const [pulse, setPulse] = useState(false);
+
+  useEffect(() => {
+    setIsFav(getFavs().some(f => f.slug === comic.slug));
+    const onUpdate = () => setIsFav(getFavs().some(f => f.slug === comic.slug));
+    window.addEventListener('nepchu-favorites-update', onUpdate);
+    return () => window.removeEventListener('nepchu-favorites-update', onUpdate);
+  }, [comic.slug]);
+
+  const handleFav = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const next = toggleFavorite(comic);
+    setIsFav(next);
+    if (next) { setPulse(true); setTimeout(() => setPulse(false), 600); }
+  };
 
   return (
     <motion.div
@@ -32,7 +65,6 @@ export default function ComicCard({ comic, size = 'md', className, rank }: Comic
         {/* Cover container */}
         <div className="relative w-full aspect-[3/4] overflow-hidden rounded-2xl shadow-lg shadow-black/20 group-hover:shadow-2xl group-hover:shadow-purple-600/20 transition-shadow duration-300">
 
-          {/* Cover image */}
           <Image
             src={comic.cover}
             alt={comic.title}
@@ -42,7 +74,6 @@ export default function ComicCard({ comic, size = 'md', className, rank }: Comic
             unoptimized
           />
 
-          {/* Permanent subtle gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
           {/* Hover overlay */}
@@ -88,7 +119,21 @@ export default function ComicCard({ comic, size = 'md', className, rank }: Comic
             </div>
           )}
 
-          {/* Bottom info on hover */}
+          {/* Heart button — always visible when favorited, else shows on hover */}
+          <AnimatePresence>
+            {isFav && (
+              <motion.div
+                key="fav-glow"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 pointer-events-none"
+                style={{ boxShadow: 'inset 0 0 0 2px rgba(244,63,94,0.5)', borderRadius: '1rem' }}
+              />
+            )}
+          </AnimatePresence>
+
+          {/* Bottom info */}
           <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5 text-white/80 text-xs">
@@ -102,12 +147,19 @@ export default function ComicCard({ comic, size = 'md', className, rank }: Comic
                 >
                   <Bookmark className="w-3 h-3 text-white" />
                 </button>
-                <button
-                  onClick={e => { e.preventDefault(); e.stopPropagation(); }}
-                  className="w-7 h-7 bg-white/15 hover:bg-rose-500/70 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/20 transition-colors"
+                <motion.button
+                  onClick={handleFav}
+                  animate={pulse ? { scale: [1, 1.5, 0.9, 1.1, 1] } : {}}
+                  transition={{ duration: 0.5 }}
+                  className={cn(
+                    'w-7 h-7 backdrop-blur-sm rounded-full flex items-center justify-center border transition-all duration-200',
+                    isFav
+                      ? 'bg-rose-500/90 border-rose-400/60 shadow-lg shadow-rose-500/40'
+                      : 'bg-white/15 hover:bg-rose-500/70 border-white/20'
+                  )}
                 >
-                  <Heart className="w-3 h-3 text-white" />
-                </button>
+                  <Heart className={cn('w-3 h-3 transition-all', isFav ? 'text-white fill-white' : 'text-white')} />
+                </motion.button>
               </div>
             </div>
           </div>
@@ -131,6 +183,23 @@ export default function ComicCard({ comic, size = 'md', className, rank }: Comic
           </div>
         </div>
       </Link>
+
+      {/* Persistent heart badge khi đã yêu thích */}
+      <AnimatePresence>
+        {isFav && (
+          <motion.button
+            key="fav-badge"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            onClick={handleFav}
+            className="absolute top-2 left-2 w-6 h-6 bg-rose-500 rounded-full flex items-center justify-center shadow-lg shadow-rose-500/50 z-10 pointer-events-auto"
+            title="Bỏ yêu thích"
+          >
+            <Heart className="w-3 h-3 text-white fill-white" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

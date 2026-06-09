@@ -24,6 +24,7 @@ function getFavs(): Comic[] {
 }
 function setFavs(favs: Comic[]) {
   localStorage.setItem('nepchu_favorites', JSON.stringify(favs));
+  window.dispatchEvent(new CustomEvent('nepchu-favorites-update'));
 }
 function getRatings(): Record<string, number> {
   try { return JSON.parse(localStorage.getItem('nepchu_ratings') || '{}'); } catch { return {}; }
