@@ -225,7 +225,7 @@ function UsersTab({ users: init }: { users: AdminUser[] }) {
                         <AvatarFallback className="text-[10px]">{u.username[0]}</AvatarFallback>
                       </Avatar>
                       <span className="font-medium truncate max-w-[120px]">{u.username}</span>
-                      {u.role === 'admin' && <Lock className="w-3 h-3 text-red-400 flex-none" title="Không thể xóa" />}
+                      {u.role === 'admin' && <span title="Không thể xóa"><Lock className="w-3 h-3 text-red-400 flex-none" /></span>}
                     </div>
                   </td>
                   <td className="px-4 py-3 text-muted-foreground text-xs truncate max-w-[160px]">{u.email}</td>
