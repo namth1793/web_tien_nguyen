@@ -5,6 +5,7 @@ import { Star, Eye, BookOpen, Bookmark, Heart, Flame, Sparkles, Play } from 'luc
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatViews, genreColor, cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Comic } from '@/lib/types';
 
 /* ─── Favorites helpers ─── */
@@ -37,19 +38,25 @@ const rankColors = [
 
 export default function ComicCard({ comic, size = 'md', className, rank }: ComicCardProps) {
   const widths = { sm: 'w-32', md: 'w-44', lg: 'w-52' };
+  const { user } = useAuth();
   const [isFav, setIsFav] = useState(false);
   const [pulse, setPulse] = useState(false);
 
   useEffect(() => {
+    if (!user) { setIsFav(false); return; }
     setIsFav(getFavs().some(f => f.slug === comic.slug));
     const onUpdate = () => setIsFav(getFavs().some(f => f.slug === comic.slug));
     window.addEventListener('nepchu-favorites-update', onUpdate);
     return () => window.removeEventListener('nepchu-favorites-update', onUpdate);
-  }, [comic.slug]);
+  }, [comic.slug, user]);
 
   const handleFav = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!user) {
+      window.dispatchEvent(new CustomEvent('nepchu-open-auth'));
+      return;
+    }
     const next = toggleFavorite(comic);
     setIsFav(next);
     if (next) { setPulse(true); setTimeout(() => setPulse(false), 600); }

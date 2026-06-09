@@ -47,12 +47,20 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
     return () => window.removeEventListener('nepchu-sidebar-update', refresh);
   }, []);
 
-  /* Track favorites count */
+  /* Track favorites count (only when logged in) */
   useEffect(() => {
+    if (!user) { setFavCount(0); return; }
     setFavCount(getFavs().length);
     const onUpdate = () => setFavCount(getFavs().length);
     window.addEventListener('nepchu-favorites-update', onUpdate);
     return () => window.removeEventListener('nepchu-favorites-update', onUpdate);
+  }, [user]);
+
+  /* Open auth modal when ComicCard requests it */
+  useEffect(() => {
+    const onOpenAuth = () => setShowAuth(true);
+    window.addEventListener('nepchu-open-auth', onOpenAuth);
+    return () => window.removeEventListener('nepchu-open-auth', onOpenAuth);
   }, []);
 
   /* Build visible + ordered nav items */
@@ -169,8 +177,8 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
           );
         })}
 
-        {/* Yêu thích */}
-        <Link href="/favorites" onClick={onClose}>
+        {/* Yêu thích — chỉ hiện khi đã đăng nhập */}
+        {user && <Link href="/favorites" onClick={onClose}>
           <div className={cn(
             'relative group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 cursor-pointer',
             pathname === '/favorites'
@@ -204,7 +212,7 @@ function SidebarContent({ collapsed, setCollapsed, onClose, showCollapse = true 
               <motion.div layoutId="activeIndicator" className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-full" />
             )}
           </div>
-        </Link>
+        </Link>}
 
         {/* Management link — role-based */}
         {user && (

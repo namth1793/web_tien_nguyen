@@ -1,28 +1,31 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Heart, Trash2, SortAsc, BookOpen, Star, Eye, Search } from 'lucide-react';
+import { Heart, Trash2, SortAsc, BookOpen, Star, Eye, Search, LogIn } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { getFavs, setFavs } from '@/components/comics/ComicCard';
+import { useAuth } from '@/contexts/AuthContext';
 import { formatViews, genreColor, statusLabel, cn } from '@/lib/utils';
 import type { Comic } from '@/lib/types';
 
 type SortKey = 'added' | 'title' | 'rating' | 'views';
 
 export default function FavoritesPage() {
+  const { user, loading } = useAuth();
   const [favs, setFavsState] = useState<Comic[]>([]);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortKey>('added');
 
   useEffect(() => {
+    if (!user) return;
     setFavsState(getFavs());
     const onUpdate = () => setFavsState(getFavs());
     window.addEventListener('nepchu-favorites-update', onUpdate);
     return () => window.removeEventListener('nepchu-favorites-update', onUpdate);
-  }, []);
+  }, [user]);
 
   const remove = (slug: string) => {
     const next = getFavs().filter(f => f.slug !== slug);
@@ -43,6 +46,34 @@ export default function FavoritesPage() {
       if (sort === 'views')  return b.views - a.views;
       return 0; // 'added' = giữ nguyên thứ tự lưu
     });
+
+  /* Loading */
+  if (loading) return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="w-8 h-8 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+
+  /* Chưa đăng nhập */
+  if (!user) return (
+    <div className="flex flex-col items-center justify-center min-h-[80vh] p-6 text-center">
+      <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="max-w-sm">
+        <div className="w-20 h-20 mx-auto mb-5 bg-gradient-to-br from-rose-500 to-pink-600 rounded-3xl flex items-center justify-center shadow-xl shadow-rose-500/25">
+          <Heart className="w-10 h-10 text-white fill-white" />
+        </div>
+        <h1 className="text-2xl font-black mb-2">Truyện yêu thích</h1>
+        <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+          Đăng nhập để lưu và xem lại những truyện bạn yêu thích bất cứ lúc nào.
+        </p>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent('nepchu-open-auth'))}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white font-semibold rounded-xl shadow-lg shadow-rose-500/25 hover:shadow-rose-500/40 transition-all"
+        >
+          <LogIn className="w-4 h-4" /> Đăng nhập ngay
+        </button>
+      </motion.div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen p-4 lg:p-8">
